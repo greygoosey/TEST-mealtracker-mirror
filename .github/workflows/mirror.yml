@@ -1,9 +1,9 @@
-name: Mirror Upstream Repo
+name: Mirror Upstream Repo (Private)
 
 on:
   schedule:
-    - cron: "0 */6 * * *"  # every 6 hours
-  workflow_dispatch:        # allows manual runs
+    - cron: "0 */6 * * *"   # runs every 6 hours
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,27 +12,16 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - name: Set bot identity
+      - name: Identity for commits
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # === PUBLIC UPSTREAM REPO ===
-      # If your source repo is public, use this clone command:
-      - name: Clone upstream as a mirror
+      - name: Clone upstream as a mirror (private)
         run: |
-          git clone --mirror https://github.com/greygoosey/mealtracker1-v-8-23-25-deployprep.git mirror
+          git clone --mirror https://x-access-token:${{ secrets.greygoosey }}@github.com/greygoosey/mealtracker1-v-8-23-25-deployprep.git mirror
 
-      # === PRIVATE UPSTREAM REPO ===
-      # If the source repo is private, comment out the step above
-      # and uncomment the one below after adding a personal access token
-      # named UPSTREAM_TOKEN under Settings → Secrets → Actions.
-
-      # - name: Clone upstream as a mirror (private)
-      #   run: |
-      #     git clone --mirror https://x-access-token:${{ secrets.UPSTREAM_TOKEN }}@github.com/UPSTREAM_OWNER/mealtracker1-v-8-23-25-deployprep.git mirror
-
-      - name: Push all refs (branches & tags) to this repo
+      - name: Push all refs (branches & tags) to this mirror
         run: |
           cd mirror
           git remote set-url --push origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
